@@ -1,0 +1,117 @@
+// use prisma-next
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  username  String?
+  password  String
+  name      String?
+  posts     Post[]
+  createdAt TimestamptzString @default(now())
+  tokens     Token[]
+  consulta   Consulta[]
+  prontuario Prontuario[]
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String?
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  Int
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+}
+
+model Token {
+  id        Int       @id @default(autoincrement())
+  token     String    
+  type      String 
+  revoked   Boolean   @default(false)
+  expiresAt TimestamptzString
+  usuarioId Int
+
+  usuario User @relation(fields: [usuarioId], references: [id])
+
+}
+
+model Exame {
+  id         Int               @id @default(autoincrement())
+  tipo_exame String
+  valor      Decimal
+  descricao  String
+  resultado  String?
+  data_exame TimestamptzString
+  paciente_id Int
+  paciente   Paciente              @relation(fields:[paciente_id], references:[id])
+
+}
+
+model Consulta {
+  id                    Int              @id @default(autoincrement())
+  motivo                String
+  data_consulta         TimestamptzString
+  observacoes           String
+  medico_responsavel_id Int
+  medico_responsavel    User             @relation(fields: [medico_responsavel_id], references: [id])
+  paciente_id           Int
+  paciente              Paciente         @relation(fields: [paciente_id], references: [id])
+}
+
+model Prontuario {
+  id                    Int              @id @default(autoincrement())
+  descricao             String
+  data                  TimestamptzString?
+  medico_responsavel_id Int
+  medico_responsavel    User             @relation(fields: [medico_responsavel_id], references: [id])
+  paciente_id           Int
+  paciente              Paciente         @relation(fields: [paciente_id], references: [id])
+}
+
+model Paciente {
+  id              Int      @id @default(autoincrement())
+  nome            String
+  cpf             String
+  telefone        String
+  email           String
+  data_nascimento TimestamptzString
+  sexo            String
+  alergia         String
+  cirurgia        String
+  peso            Decimal
+  altura          Int
+  exame           Exame[]
+  consulta        Consulta[]
+  prontuario      Prontuario[]
+}
+
+model ItemEstoque {
+  id             Int    @id @default(autoincrement())
+  nome           String @unique
+  unidade        String
+  estoque_minimo Int
+  saldo          Int
+  movimentacoes  MovimentacaoEstoque[]
+  pedidos        PedidoCompra[]
+}
+
+model MovimentacaoEstoque {
+  id         Int                @id @default(autoincrement())
+  tipo       String
+  quantidade Int
+  lote       String?
+  validade   TimestamptzString?
+  usuario    String?
+  data       TimestamptzString  @default(now())
+  item_id    Int
+  item       ItemEstoque        @relation(fields: [item_id], references: [id])
+}
+
+model PedidoCompra {
+  id         Int               @id @default(autoincrement())
+  quantidade Int
+  status     String
+  criado_em  TimestamptzString @default(now())
+  item_id    Int
+  item       ItemEstoque       @relation(fields: [item_id], references: [id])
+}
